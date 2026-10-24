@@ -1,2 +1,2 @@
-/* ลิงก์ระบบหลังบ้าน (Apps Script) ลงท้าย /exec  แก้ครั้งเดียวหลังทำให้ใช้งานได้แล้วจะไม่เปลี่ยนอีก */
-window.API_URL = 'PUT_YOUR_EXEC_URL_HERE';
+/* ลิงก์ระบบหลังบ้าน (Apps Script) ลงท้าย /exec  รายการหลักของ .deployment-ids ไม่เปลี่ยนอีก */
+window.API_URL = 'https://script.google.com/macros/s/AKfycbwNMUxR2maO_Q9l6W2kXFzuIaCbpOWky-sjochBqBaGP5hIE9H03iAsBLSYeAntf1qv/exec';
