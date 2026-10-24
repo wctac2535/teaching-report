@@ -1,5 +1,5 @@
 /* ตัวช่วยร่วมทุกหน้า: เมนู ช่องเลือกชื่อ (จำชื่อไว้ในเครื่อง) เลขเวอร์ชัน */
-window.APP_VERSION = 'v26';
+window.APP_VERSION = 'v27';
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var TR = window.TR = { $: $ };

@@ -1,6 +1,6 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>กรอกรายงานการสอน</title>
-<link rel="stylesheet" href="app.css?v=26">
+<link rel="stylesheet" href="app.css?v=27">
 <style>
 body{font-family:'Sarabun',system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;background:#faf8f3;color:#222}
 h1{font-size:20px} fieldset{border:1px solid #d8d2c4;border-radius:10px;margin:14px 0;background:#fff}
@@ -45,13 +45,13 @@ a.mini{width:auto;padding:6px 12px;font-size:14px;margin:6px 6px 0 0;background:
 <div id="sum"></div><small>เลือกเวลาเริ่มสอนและจำนวนชั่วโมง ระบบคำนวณเวลาเลิกให้ · ชั่วโมงรวม = จำนวนครั้ง × จำนวนชั่วโมง · วันที่ไม่ได้สอนให้ติ๊ก “ไม่มีการเรียนการสอน” · รวมไม่เกิน 88 ชั่วโมง/เดือน · ปกติหยุดทุกวันพระและวันอาทิตย์ หากมีการสอนในวันดังกล่าวให้กรอกได้ตามปกติ</small></fieldset>
 <button type="submit">บันทึกและสร้างรายงาน PDF</button><div id="msg"></div>
 </form>
-<script src="config.js?v=26"></script><script src="shim.js?v=26"></script><script src="common.js?v=26"></script>
+<script src="config.js?v=27"></script><script src="shim.js?v=27"></script><script src="common.js?v=27"></script>
 <script>
 TR.nav(TR.TEACH,'report.html');
 
 const DAYS=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'];
 const $=id=>document.getElementById(id);
-let SUBJ={},TID='',READY=false;
+let SUBJ={},TID='',READY=false,MONTHN=[];
 const esc=x=>String(x||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function dl(name,b64){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
  const url=URL.createObjectURL(new Blob([u],{type:'application/pdf'})),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
@@ -72,12 +72,14 @@ function fillForm(r){
  $('days').scrollIntoView({behavior:'smooth'});}
 TR.run('getInit').then(init).catch(function(e){document.getElementById('msg').textContent='❌ '+e.message;});
 function init(d){
- SUBJ=d.subjects;
+ SUBJ=d.subjects;MONTHN=d.months;
  $('month').innerHTML=d.months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
  $('month').value=d.month;$('year').value=d.thaiYear;
  const fy=()=>$('fiscalYear').value=+$('year').value+(+$('month').value>=9?1:0);
  const sd=()=>$('signDay').value=new Date(+$('year').value-543,+$('month').value+1,0).getDate();
  $('month').onchange=()=>{fy();sd()};$('year').onchange=()=>{fy();sd()};fy();sd();
+ const pm=/^(\d{4})-(\d{1,2})$/.exec(new URLSearchParams(location.search).get('m')||'');
+ if(pm&&+pm[2]>=0&&+pm[2]<=11){$('month').value=pm[2];$('year').value=pm[1];fy();sd();}
  $('days').innerHTML=DAYS.map(day=>`<div class="row day" data-day="${day}"><b>${day}</b><span class="cpy"><select class="cps"><option value="">คัดลอกจากวัน…</option>${DAYS.filter(x=>x!==day).map(x=>`<option>${x}</option>`).join('')}</select><button type="button" class="mini cp">คัดลอก</button><span class="cpm"></span></span><span class="dsum"></span><label class="off"><input type="checkbox" class="offc">ไม่มีการเรียนการสอน</label><div class="ents"></div><button type="button" class="add">+ เพิ่มช่วงสอนของวัน${day}</button></div>`).join('');
  document.querySelectorAll('.day').forEach(addEnt);
  $('days').addEventListener('input',calc);
@@ -151,7 +153,10 @@ $('f').onsubmit=e=>{e.preventDefault();
  const btn=document.querySelector('#f button[type=submit]');btn.disabled=true;let sec=0;
  const tm=setInterval(()=>{$('msg').textContent='⏳ กำลังสร้างรายงาน PDF… '+(++sec)+' วินาที (กรุณาอย่าปิดหน้านี้)'},1000);
  $('msg').textContent='⏳ กำลังสร้างรายงาน PDF…';
- google.script.run.withSuccessHandler(r=>{clearInterval(tm);btn.disabled=false;$('msg').innerHTML=`✅ บันทึกแล้ว ${r.totalHours} ชั่วโมง <button type="button" class="mini" id="dlNow" style="background:#8a5a14">⬇️ ดาวน์โหลด PDF</button>`;$('dlNow').onclick=()=>dl(r.name,r.b64);$('msg').insertAdjacentHTML('beforeend',' <a class="mini" href="history.html" style="display:inline-block;text-decoration:none;color:#fff">ดูรายงานของฉัน</a>');})
+ google.script.run.withSuccessHandler(r=>{clearInterval(tm);btn.disabled=false;
+  const mn=MONTHN[+$('month').value]||'',noT=!(r.totalHours>0);
+  const thanks=r.replaced?'🙏 ขอบคุณที่ปรับแก้รายงานเดือน'+mn:noT?'🙏 ขอบคุณที่แจ้งรายงานเดือน'+mn+' (ไม่มีการสอน)':'🙏 ขอบคุณที่ส่งรายงานเดือน'+mn+(r.late?'':'ตรงเวลา');
+  $('msg').innerHTML=`<div style="background:#dff3e6;color:#2c7a4b;border-radius:8px;padding:10px 12px"><b>${thanks}</b><br>บันทึกแล้ว ${r.totalHours} ชั่วโมง</div><button type="button" class="mini" id="dlNow" style="background:#8a5a14">⬇️ ดาวน์โหลด PDF</button> <a class="mini" href="history.html" style="display:inline-block;text-decoration:none;color:#fff">ดูรายงานของฉัน</a> <a class="mini" href="index.html" style="display:inline-block;text-decoration:none;color:#fff">กลับหน้าแรก</a>`;$('dlNow').onclick=()=>dl(r.name,r.b64);})
  .withFailureHandler(x=>{clearInterval(tm);btn.disabled=false;$('msg').textContent='❌ '+x.message;})
  .submitReport({teacherId:TID,month:+$('month').value,year:+$('year').value,fiscalYear:+$('fiscalYear').value,signDay:$('signDay').value,offDays:offDays(),lines:lines().map(({_el,...r})=>r)});};
 

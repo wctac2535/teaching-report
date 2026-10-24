@@ -1,30 +1,73 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ระบบรายงานการสอน จศป.</title>
-<link rel="stylesheet" href="app.css?v=26">
+<link rel="stylesheet" href="app.css?v=27">
 <script>if(/[?&]page=dash/.test(location.search))location.replace('dashboard.html');</script>
 </head><body style="margin:0">
 <div class="home">
   <div class="hero"><h1>ระบบรายงานการสอน จศป.</h1><p>วัดพระธาตุศรีจอมทอง</p></div>
   <div id="deadline" class="deadline" style="display:none"></div>
+  <div id="statusBox"></div>
+  <div id="prevBox"></div>
   <div id="pickBox"></div>
-  <p class="who" id="hello"></p>
   <div class="tiles">
-    <a class="tile main" href="report.html"><span class="ico">✎</span><span><b>กรอกรายงานการสอน</b><small>สำหรับครู ใช้ทุกเดือน</small></span><span class="go">›</span></a>
+    <a class="tile main" id="tileReport" href="report.html"><span class="ico">✎</span><span><b>กรอกรายงานการสอน</b><small id="tileSub">สำหรับครู ใช้ทุกเดือน</small></span><span class="go">›</span></a>
     <a class="tile" href="history.html"><span class="ico">▤</span><span><b>รายงานของฉัน</b><small>ดูประวัติ ดาวน์โหลด PDF แก้ไขฉบับเดิม</small></span><span class="go">›</span></a>
     <a class="tile" href="profile.html"><span class="ico">☺</span><span><b>ข้อมูลส่วนตัว</b><small>แก้ไขชื่อ วัด บัญชี เจ้าอาวาส</small></span><span class="go">›</span></a>
     <a class="tile" href="guide.html"><span class="ico">?</span><span><b>คู่มือและคำถามที่พบบ่อย</b><small>วิธีกรอก วิธีแก้ไข เมื่อมีปัญหา</small></span><span class="go">›</span></a>
   </div>
   <div class="foot"><span>สำหรับผู้บริหาร: <a href="dashboard.html">เข้าแดชบอร์ด</a></span></div>
 </div>
-<script src="config.js?v=26"></script><script src="shim.js?v=26"></script><script src="common.js?v=26"></script>
+<script src="config.js?v=27"></script><script src="shim.js?v=27"></script><script src="common.js?v=27"></script>
 <script>
 (function(){
   var $=TR.$, MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  function hello(id,label){
-    $('hello').innerHTML=id?'สวัสดี <b>'+TR.esc(label)+'</b> เลือกเมนูด้านล่างได้เลย':'กรุณาเลือกชื่อของท่านก่อน แล้วเลือกเมนูด้านล่าง';
+  var TID='',SEQ=0,DL=24;
+  function status(cls,ic,title,sub,acts){
+    return '<div class="status '+cls+'"><div class="row"><span class="ic">'+ic+'</span><div><b>'+title+'</b>'+(sub?'<br><small>'+sub+'</small>':'')+'</div></div>'+(acts?'<div class="acts">'+acts+'</div>':'')+'</div>';
   }
-  hello('','');
-  TR.picker($('pickBox'),function(id,label){hello(id,label);});
+  function editHref(y,m){return 'report.html?edit='+y+'-'+m;}
+  function tile(cls,sub,href){var t=$('tileReport');t.className='tile '+cls;t.setAttribute('href',href||'report.html');$('tileSub').textContent=sub;}
+  function render(r){
+    var c=r.cur,m=TR.esc(r.monthName),h='',acts='';
+    if(c.state==='sent'){
+      var title=c.edited?'🙏 ขอบคุณที่ปรับแก้รายงานเดือน'+m:c.noTeach?'🙏 ขอบคุณที่แจ้งรายงานเดือน'+m+' (ไม่มีการสอน)':c.onTime?'🙏 ขอบคุณที่ส่งรายงานเดือน'+m+'ตรงเวลา':'🙏 ขอบคุณที่ส่งรายงานเดือน'+m;
+      var sub=(c.edited?'แก้ไขล่าสุด ':'ส่งเมื่อ ')+TR.esc(c.at)+(c.noTeach?'':' · '+TR.esc(c.hours)+' ชั่วโมง');
+      acts=(c.fileId?'<button type="button" class="sbtn" id="pdfBtn">⬇ ดาวน์โหลด PDF</button>':'')+'<a class="sbtn g" href="'+editHref(r.year,r.month)+'">แก้ไข</a>';
+      h=status('s-ok','✓',title,sub,acts);
+      tile('','ส่งแล้ว · กดเพื่อแก้ไขฉบับเดิมได้',editHref(r.year,r.month));
+    }else if(c.state==='manual'){
+      h=status('s-man','✓','🙏 ขอบคุณ ผู้ดูแลบันทึกแล้วว่าท่านส่งรายงานเดือน'+m,'ไม่ต้องส่งซ้ำ · บันทึกเมื่อ '+TR.esc(c.at));
+      tile('dim','ส่งแล้ว (นอกระบบ) ไม่ต้องกรอก');
+    }else if(c.state==='returned'){
+      h=status('s-ret','↩','รายงานเดือน'+m+'รอแก้ไข',c.reason?'เหตุผล: '+TR.esc(c.reason):'','<a class="sbtn" href="'+editHref(r.year,r.month)+'">แก้ไขรายงาน ›</a>');
+      tile('main','รอแก้ไข · กดเพื่อแก้ไข',editHref(r.year,r.month));
+    }else{
+      h=status('s-no','!','ยังไม่ได้ส่งรายงานเดือน'+m,'','<a class="sbtn" href="report.html">กรอกรายงานเดือนนี้ ›</a>');
+      tile('main','ยังไม่ได้ส่ง · ส่งภายในวันที่ '+r.deadlineDay);
+    }
+    $('statusBox').innerHTML=h;
+    var p=r.prev;
+    $('prevBox').innerHTML=!p?'':(p.state==='returned'
+      ?'<div class="prevwarn"><span>↩ รายงานเดือน'+TR.esc(p.monthName)+'รอแก้ไข'+(p.reason?' ('+TR.esc(p.reason)+')':'')+'</span><a class="sbtn" href="'+editHref(p.year,p.month)+'">แก้ไขเดือน'+TR.esc(p.monthName)+' ›</a></div>'
+      :'<div class="prevwarn"><span>⚠ เดือน'+TR.esc(p.monthName)+'ยังไม่ได้ส่ง</span><a class="sbtn" href="report.html?m='+p.year+'-'+p.month+'">กรอกเดือน'+TR.esc(p.monthName)+' ›</a></div>');
+    var b=$('pdfBtn');
+    if(b)b.onclick=function(){
+      b.disabled=true;var t0=b.textContent;b.textContent='กำลังเตรียมไฟล์…';
+      TR.run('getPdf',TID,c.fileId).then(function(f){TR.dl(f.name,f.b64);b.disabled=false;b.textContent=t0;})
+        .catch(function(e){b.disabled=false;b.textContent='❌ '+e.message;});
+    };
+  }
+  function load(id){
+    TID=id;var my=++SEQ;$('prevBox').innerHTML='';
+    if(!id){
+      $('statusBox').innerHTML=status('s-none','?','เลือกชื่อเพื่อดูสถานะรายงานของท่าน','');tile('main','สำหรับครู ใช้ทุกเดือน');return;
+    }
+    $('statusBox').innerHTML=status('s-none','…','กำลังตรวจสถานะรายงาน','');
+    TR.run('getMyStatus',id).then(function(r){if(my===SEQ)render(r);})
+      .catch(function(e){if(my===SEQ)$('statusBox').innerHTML=status('s-none','!','ตรวจสถานะไม่ได้','❌ '+TR.esc(e.message));});
+  }
+  load('');
+  TR.picker($('pickBox'),function(id){load(id);});
   function show(d){
     var now=new Date(),left=d-now.getDate(),m=MONTHS[now.getMonth()],el=$('deadline');
     el.style.display='';
@@ -32,6 +75,6 @@
     else if(left===0){el.textContent='รายงานเดือน'+m+' ครบกำหนดส่งวันนี้ (วันที่ '+d+')';}
     else{el.classList.add('late');el.textContent='เลยกำหนดส่งรายงานเดือน'+m+' (วันที่ '+d+') แล้ว หากยังไม่ได้ส่ง กรุณาส่งโดยเร็ว';}
   }
-  TR.run('getPublicInfo').then(function(i){show(i.deadlineDay);}).catch(function(){});
+  TR.run('getPublicInfo').then(function(i){DL=i.deadlineDay;show(i.deadlineDay);}).catch(function(){});
 })();
 </script></body></html>

@@ -60,3 +60,21 @@ a.tile .go{margin-left:auto;color:var(--muted);font-size:22px}
 .fgrid label{display:block;font-size:13px}
 .fgrid input{width:100%;padding:8px;border:1px solid #bbb;border-radius:6px;font:inherit;box-sizing:border-box}
 .fgrid input.err{border-color:#d33;background:#fff0f0}
+/* กล่องสถานะรายงานในหน้าแรก */
+:root{--blue:#2a4d8f;--blue-soft:#e6eefb}
+.status{border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:14px;margin-bottom:12px}
+.status .row{display:flex;gap:10px;align-items:center}
+.status .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;flex:none;font-size:15px}
+.status b{font-size:15px}
+.status small{opacity:.85;font-size:13px}
+.status .acts{display:flex;gap:8px;flex-wrap:wrap}
+.s-no{background:var(--red-soft);color:var(--red)}.s-no .ic{background:var(--red);color:#fff}
+.s-ok{background:var(--green-soft);color:var(--green)}.s-ok .ic{background:var(--green);color:#fff}
+.s-man{background:var(--blue-soft);color:var(--blue)}.s-man .ic{background:var(--blue);color:#fff}
+.s-ret{background:var(--warn-soft);color:var(--brand)}.s-ret .ic{background:var(--brand);color:#fff}
+.s-none{background:var(--card);border:1px dashed var(--line);color:var(--muted)}.s-none .ic{background:var(--line);color:var(--muted)}
+.sbtn{display:inline-block;border:0;border-radius:8px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;background:#222;color:#fff;text-decoration:none;cursor:pointer}
+.sbtn.g{background:transparent;color:inherit;border:1px solid currentColor}
+.sbtn:disabled{opacity:.6}
+.prevwarn{border-radius:10px;padding:10px 14px;font-size:13px;background:var(--red-soft);color:var(--red);display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+a.tile.dim{opacity:.6}
