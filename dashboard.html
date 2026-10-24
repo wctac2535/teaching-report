@@ -1,0 +1,243 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>แดชบอร์ดการส่งรายงาน (จศป.)</title>
+<style>
+body{font-family:'Sarabun',system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#faf8f3;color:#222}
+h1{font-size:20px;margin:4px 0 12px} fieldset{border:1px solid #d8d2c4;border-radius:10px;margin:14px 0;background:#fff}
+legend{font-weight:600;padding:0 6px} label{display:block;font-size:13px;margin:6px 0}
+input,select,textarea{width:100%;box-sizing:border-box;padding:8px;border:1px solid #bbb;border-radius:6px;font:inherit}
+input[type=checkbox]{width:auto;margin-right:6px}
+button{padding:8px 16px;border:0;border-radius:8px;background:#8a5a14;color:#fff;font:inherit;font-size:15px;cursor:pointer}
+button.mini{padding:4px 10px;font-size:13px;background:#555}button.go{background:#2c7a4b}button:disabled{opacity:.5}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.card{background:#fff;border:1px solid #d8d2c4;border-radius:10px;padding:10px 14px}
+.card b{display:block;font-size:26px;line-height:1.2}.card span{font-size:13px;color:#666}
+.ok b{color:#2c7a4b}.no b{color:#c0392b}
+.bar{height:14px;background:#eadfca;border-radius:7px;overflow:hidden;margin:6px 0 2px}.bar i{display:block;height:100%;background:#3b6e4f}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d8d2c4;border-radius:10px;overflow:hidden;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left}th{background:#f1eee6;font-weight:600}
+td.n,th.n{text-align:right}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.b-ret{background:#fff0d6;color:#8a5a14}.b-ok{background:#dff3e6;color:#1e6b3c}.b-zero{background:#e6eefb;color:#2a4d8f}.b-no{background:#fde2e2;color:#a00}
+tr.miss td{background:#fff6f6}
+textarea{height:80px}
+label.wide{grid-column:1/-1}.hist button.mini{margin-left:6px}.tp select{width:auto;display:inline-block}
+pre{white-space:pre-wrap;background:#f4f1ea;border:1px dashed #b9a97f;border-radius:8px;padding:10px;font:inherit;margin:8px 0}
+#msg,#sendMsg,#setMsg{margin:8px 0;color:#a00} .okmsg{color:#1e6b3c!important}
+small{color:#666} .scroll{overflow-x:auto} .row2{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hist div{font-size:13px;padding:3px 0;border-bottom:1px solid #f0ece2}.hist .bad{color:#a00}
+@media print{#login,#ctl,.noprint{display:none!important}body{background:#fff}}
+</style></head><body>
+<h1>📊 แดชบอร์ดการส่งรายงานการสอน (จศป.)</h1>
+
+<fieldset id="login"><legend>เข้าสู่ระบบ</legend>
+<div class="g"><label>รหัสผ่านอาจารย์ใหญ่<input id="code" type="password" autocomplete="off"></label><div><button id="go" type="button">เข้าดูข้อมูล</button></div></div>
+</fieldset>
+<div id="msg"></div>
+
+<div id="main" style="display:none">
+<fieldset id="ctl"><legend>เลือกเดือน</legend>
+<div class="g"><label>เดือน<select id="month"></select></label><label>ปี พ.ศ.<input id="year" type="number"></label>
+<div><button id="reload" type="button">รีเฟรช</button> <button id="prn" class="mini" type="button">พิมพ์</button></div></div></fieldset>
+
+<div id="title" style="font-weight:600;font-size:16px"></div>
+<div class="bar"><i id="bar" style="width:0"></i></div><small id="pct"></small>
+<div class="cards">
+<div class="card ok"><b id="cDone">–</b><span>ส่งรายงานแล้ว (รูป)</span></div>
+<div class="card no"><b id="cMiss">–</b><span>ยังไม่ส่ง (รูป)</span></div>
+<div class="card"><b id="cAll">–</b><span>ครูทั้งหมด (รูป)</span></div>
+<div class="card"><b id="cHrs">–</b><span>ชั่วโมงรวมที่รายงาน</span></div>
+</div>
+
+<div class="scroll"><table><thead><tr><th class="n">#</th><th>ชื่อ</th><th>สถานะ</th><th class="n">ชั่วโมง/เดือน</th><th>ส่งเมื่อ</th><th class="noprint">ไฟล์</th><th class="noprint">เลือกเตือน</th><th class="noprint">จัดการ</th></tr></thead><tbody id="rows"></tbody></table></div>
+
+<fieldset class="noprint" style="margin-top:16px"><legend>รายชื่อที่ยังไม่ส่ง (คัดลอกไปเตือนทางไลน์ได้)</legend>
+<textarea id="miss" readonly></textarea><div style="margin-top:6px"><button id="cp" class="mini" type="button">คัดลอกรายชื่อ</button> <span id="cpm"></span></div></fieldset>
+
+<fieldset class="noprint" id="sendBox"><legend>📨 ส่งข้อความแจ้งเตือนทางไลน์ (เดือนที่เลือกด้านบน)</legend>
+<div class="g">
+ <label>ประเภทข้อความ<select id="kind">
+  <option value="remind">เตือนกลุ่มครู: ยังไม่ส่งรายงาน</option>
+  <option value="summary">สรุปการส่งเข้ากลุ่มผู้บริหาร</option>
+  <option value="form">ประกาศแบบฟอร์ม (เชิญประชุม / แจ้งข่าว / แจ้งหยุด)</option>
+  <option value="custom">ประกาศพิมพ์เองอิสระ</option></select></label>
+ <label id="ftWrap" style="display:none">แบบฟอร์ม<select id="ftype"><option value="meeting">เชิญประชุม</option><option value="news">แจ้งข่าวทั่วไป</option><option value="change">แจ้งหยุด / เปลี่ยนแปลง</option></select></label>
+ <label id="tgtWrap" style="display:none">ส่งไปที่<select id="tgt"><option value="teacher">กลุ่มครู</option><option value="exec">กลุ่มผู้บริหาร</option><option value="both">ทั้งสองกลุ่ม</option></select></label>
+</div>
+<div id="optForm" style="display:none" class="g">
+ <label class="ff" data-k="title"><span></span><input id="f_title" maxlength="100"></label>
+ <label class="ff" data-k="date"><span></span><input id="f_date" type="date"></label>
+ <label class="ff" data-k="time"><span></span><span class="tp"><select id="f_time_h"></select> : <select id="f_time_m"></select> น.</span></label>
+ <label class="ff" data-k="place"><span></span><input id="f_place" maxlength="200"></label>
+ <label class="ff wide" data-k="agenda"><span></span><textarea id="f_agenda" maxlength="600"></textarea></label>
+ <label class="ff wide" data-k="body"><span></span><textarea id="f_body" maxlength="1200"></textarea></label>
+ <label class="ff wide" data-k="note"><span></span><textarea id="f_note" maxlength="400" style="height:56px"></textarea></label>
+</div>
+<div id="optRemind">
+ <label><input type="checkbox" id="showNames">แสดงชื่อคนที่ยังไม่ส่งในข้อความ</label>
+ <small>หรือติ๊กเลือกครูในช่อง "เลือกเตือน" ของตารางด้านบน เพื่อเตือนเฉพาะรายชื่อ (จะแสดงชื่อเสมอ) <b id="selCount"></b></small>
+ <label>ข้อความเพิ่มเติม (ต่อท้าย ไม่บังคับ ไม่เกิน 300 ตัวอักษร)<textarea id="extra" maxlength="300" placeholder="เช่น ขอให้ส่งภายในวันนี้ครับ"></textarea></label>
+</div>
+<div id="optCustom" style="display:none"><label>ข้อความที่จะส่ง (ไม่เกิน 1,500 ตัวอักษร)<textarea id="ctext" maxlength="1500" style="height:110px"></textarea></label></div>
+<div id="schedBox" style="display:none"><label><input type="checkbox" id="schedOn">ตั้งเวลาส่งล่วงหน้า (ระบบตรวจทุก 5 นาที จึงอาจส่งช้าได้ไม่เกินประมาณ 5 นาที)</label>
+ <label id="schedWrap" style="display:none">ส่งเมื่อ (เวลาไทย)<span class="tp"><input type="date" id="s_date" style="width:auto"> <select id="s_h"></select> : <select id="s_m"></select> น.</span></label></div>
+<button id="prev" type="button">ดูตัวอย่างข้อความ</button>
+<div id="prevBox" style="display:none"><b>ส่งไปที่: <span id="prevTo"></span></b><pre id="prevTxt"></pre>
+ <small>ส่งแล้วถอนข้อความออกจากกลุ่มไม่ได้ ตรวจให้แน่ใจก่อน</small><br>
+ <button id="doSend" class="go" type="button">✅ ยืนยันส่ง</button> <button id="cancel" class="mini" type="button">ยกเลิก</button></div>
+<div id="sendMsg"></div>
+<div id="pendBox" style="display:none;margin-top:10px"><b>⏰ ประกาศที่ตั้งเวลาไว้ (รอส่ง)</b><div id="pend" class="hist"></div></div>
+</fieldset>
+
+<fieldset class="noprint"><legend>🧾 ประวัติการส่ง และโควตา LINE</legend>
+<div id="quota" style="margin-bottom:6px"></div><div id="hist" class="hist"><small>กำลังโหลด…</small></div>
+<div style="margin-top:10px"><b>🗂 ประกาศเฉพาะกิจที่ส่งไปแล้ว</b> <small>(กด "นำมาแก้" เพื่อดึงกลับมาแก้ไขแล้วส่งใหม่)</small></div><div id="nlist" class="hist"></div></fieldset>
+
+<fieldset class="noprint"><legend>⚙️ ตั้งค่าการแจ้งเตือนอัตโนมัติ</legend>
+<div id="status" style="margin-bottom:8px;font-size:13px"></div>
+<label><input type="checkbox" id="sAuto">เตือนกลุ่มครูอัตโนมัติ (เมื่อยังมีครูไม่ส่งรายงาน)</label>
+<div class="g">
+ <label>วันที่เตือน (คั่นด้วยจุลภาค)<input id="sDays" placeholder="20,21,22,23"></label>
+ <label>กำหนดส่ง (วันที่ของเดือน)<input id="sDead" type="number" min="1" max="31"></label>
+ <label>เวลาตรวจ/ส่งทุกวัน<select id="sHour"></select></label>
+</div>
+<label><input type="checkbox" id="sNames">แสดงชื่อคนที่ยังไม่ส่งในข้อความเตือนอัตโนมัติ (กลุ่มครูจะเห็นชื่อ)</label>
+<label>ข้อความเพิ่มเติมท้ายข้อความเตือนอัตโนมัติ (ไม่บังคับ)<textarea id="sExtra" maxlength="300"></textarea></label>
+<hr style="border:0;border-top:1px dashed #d8d2c4">
+<div class="g">
+ <label><input type="checkbox" id="sSum">สรุปให้กลุ่มผู้บริหารอัตโนมัติ</label>
+ <label>วันที่สรุป (วันที่ของเดือน)<input id="sSumDay" type="number" min="1" max="31"></label>
+</div>
+<label><input type="checkbox" id="sSumDone">สรุปผู้บริหารแสดงรายชื่อครูที่ส่งแล้วพร้อมชั่วโมงของแต่ละรูป</label>
+<label><input type="checkbox" id="sInst">แจ้งกลุ่มผู้บริหารทันทีเมื่อครูส่งรายงาน</label>
+<button id="saveSet" class="go" type="button">💾 บันทึกการตั้งค่า</button> <span id="setMsg"></span>
+<div><small>ระบบตรวจทุกวันในช่วงชั่วโมงที่เลือก (ตัวตั้งเวลาของ Google อาจเลื่อนได้ไม่เกิน 1 ชั่วโมง) การบันทึกจะตั้งเวลาใหม่ให้เอง</small></div>
+</fieldset>
+</div>
+
+<div id="dlg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9"><div style="background:#fff;max-width:380px;margin:20vh auto 0;padding:16px;border-radius:10px"><div id="dlgT" style="white-space:pre-wrap;margin-bottom:8px"></div><input id="dlgI" type="number" min="0" max="88" step="0.25" placeholder="ชั่วโมงรวม (เว้นว่างถ้าไม่ทราบ)"><div style="margin-top:10px"><button id="dlgOk" class="go" type="button">ตกลง</button> <button id="dlgNo" class="mini" type="button">ยกเลิก</button></div></div></div>
+<script>
+window.APP_VERSION='v23';
+if(!(window.google&&google.script&&google.script.run)){document.write('<script src="config.js?v=23"><\/script><script src="shim.js?v=23"><\/script>');}
+document.addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.id='ver';d.textContent='เวอร์ชัน '+window.APP_VERSION;d.style.cssText='margin:24px 0 8px;font-size:12px;color:#888;text-align:center';document.body.appendChild(d);});
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const run=(fn,...a)=>new Promise((ok,no)=>google.script.run.withSuccessHandler(ok).withFailureHandler(no)[fn](...a));
+let CODE='';try{CODE=sessionStorage.getItem('dc')||''}catch(e){}
+let PENDING=null,NOT={};
+const FT={meeting:{title:'หัวข้อการประชุม (ไม่ใส่ = ประชุมประจำเดือน)',date:'วันที่ประชุม *',time:'เวลา (24 ชม.) *',place:'สถานที่',agenda:'วาระ / เรื่องที่จะประชุม',note:'หมายเหตุ'},
+ news:{title:'หัวข้อข่าว *',body:'รายละเอียด *'},
+ change:{title:'เรื่อง เช่น แจ้งหยุดการเรียนการสอน *',date:'มีผลวันที่ (ไม่บังคับ)',body:'รายละเอียด *',note:'หมายเหตุ'}};
+const FK=['title','date','time','place','agenda','body','note'];
+const now=new Date();
+const HH=[...Array(24).keys()].map(h=>String(h).padStart(2,'0')),MM=[...Array(12).keys()].map(m=>String(m*5).padStart(2,'0'));
+const opt24=(a)=>'<option value="">--</option>'+a.map(v=>`<option>${v}</option>`).join('');
+['f_time_h','s_h'].forEach(id=>$(id).innerHTML=opt24(HH));['f_time_m','s_m'].forEach(id=>$(id).innerHTML=opt24(MM));
+function getF(k){if(k==='time'){const h=$('f_time_h').value,m=$('f_time_m').value;return h?h+':'+(m||'00'):'';}return $('f_'+k).value;}
+function setF(k,v){if(k==='time'){const p=String(v||'').split(':');$('f_time_h').value=p[0]||'';const m=p[1]||'';$('f_time_m').value=MM.indexOf(m)>=0?m:(p[0]?'00':'');}else $('f_'+k).value=v||'';}
+function schedVal(){const d=$('s_date').value,h=$('s_h').value;return d&&h?d+'T'+h+':'+($('s_m').value||'00'):'';}
+$('month').innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+$('month').value=now.getMonth();$('year').value=now.getFullYear()+543;
+$('sHour').innerHTML=[...Array(24).keys()].map(h=>`<option value="${h}">${String(h).padStart(2,'0')}:00</option>`).join('');
+function ask(t,inp,okText){return new Promise(res=>{$('dlgT').textContent=t;const I=$('dlgI');I.type=inp==='reason'?'text':'number';I.placeholder=inp==='reason'?'เหตุผล (ไม่บังคับ)':'ชั่วโมงรวม (เว้นว่างถ้าไม่ทราบ)';
+ I.style.display=inp?'':'none';I.value='';$('dlgOk').textContent=okText||'ตกลง';$('dlg').style.display='block';if(inp)I.focus();
+ const done=v=>{$('dlg').style.display='none';$('dlgOk').onclick=$('dlgNo').onclick=null;res(v)};$('dlgOk').onclick=()=>done(inp?I.value:'ok');$('dlgNo').onclick=()=>done(null);});}
+function dl(name,b64){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+ const url=URL.createObjectURL(new Blob([u],{type:'application/pdf'})),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+function load(){
+ $('msg').textContent='กำลังโหลด...';
+ run('getDashboard',CODE,+$('year').value,+$('month').value).then(d=>{render(d);loadInfo();})
+  .catch(x=>{$('msg').textContent='❌ '+x.message;$('login').style.display='';$('main').style.display='none';try{sessionStorage.removeItem('dc')}catch(e){}});}
+function render(d){
+ $('msg').textContent='';$('login').style.display='none';$('main').style.display='';
+ try{sessionStorage.setItem('dc',CODE)}catch(e){}
+ $('title').textContent='ประจำเดือน '+d.month+' พ.ศ. '+d.year;
+ $('cDone').textContent=d.done;$('cMiss').textContent=d.notDone;$('cAll').textContent=d.total;$('cHrs').textContent=d.totalHours;
+ const p=d.total?Math.round(d.done*100/d.total):0;$('bar').style.width=p+'%';$('pct').textContent='ส่งแล้ว '+p+'%';
+ $('rows').innerHTML=d.list.map((t,i)=>{
+  const st=t.returned?'<span class="badge b-ret">รอแก้ไข</span>':!t.done?'<span class="badge b-no">ยังไม่ส่ง</span>':t.manual?'<span class="badge b-zero">ส่งแล้ว (นอกระบบ)</span>':(t.hours>0?'<span class="badge b-ok">ส่งแล้ว</span>':'<span class="badge b-zero">ส่งแล้ว (ไม่มีการสอน)</span>');
+  const f=t.fileId?`<button type="button" class="mini dl" data-t="${esc(t.id)}" data-f="${esc(t.fileId)}">⬇️ PDF</button>`:'';
+  const sel=t.done?'':`<input type="checkbox" class="sel" data-id="${esc(t.id)}">`;
+  const nm=esc(t.name),rp=t.inSystem?`<button type="button" class="mini rp" data-a="${t.returned?'unret':'ret'}" data-t="${esc(t.id)}" data-n="${nm}">${t.returned?'ยกเลิกส่งกลับ':'↩ ส่งกลับแก้ไข'}</button> <button type="button" class="mini rp" data-a="del" data-t="${esc(t.id)}" data-n="${nm}" style="background:#a33">🗑 ลบ</button>`:'';
+  const mk=rp?rp:t.done?(t.manual?`<button type="button" class="mini mk" data-t="${esc(t.id)}" data-d="0">ยกเลิกการติ๊ก</button>`:''):`<button type="button" class="mini mk" data-t="${esc(t.id)}" data-d="1">✔ ส่งแล้ว (นอกระบบ)</button>`;
+  return `<tr class="${t.done?'':'miss'}"><td class="n">${i+1}</td><td>${esc(t.name)}</td><td>${st}</td><td class="n">${t.done&&(!t.manual||t.hours>0)?t.hours:'–'}</td><td>${esc(t.at)}</td><td class="noprint">${f}</td><td class="noprint">${sel}</td><td class="noprint">${mk}</td></tr>`;}).join('');
+ $('miss').value=d.list.filter(t=>!t.done).map((t,i)=>(i+1)+'. '+t.name+(t.returned?' (รอแก้ไข)':'')).join('\n')||'ส่งรายงานครบทุกรูปแล้ว 🎉';
+ selCount();hidePreview();
+}
+function selCount(){const n=document.querySelectorAll('.sel:checked').length;$('selCount').textContent=n?'(เลือกแล้ว '+n+' รูป)':'';}
+function loadInfo(){
+ run('getNotifyInfo',CODE).then(i=>{
+  const q=i.quota;
+  $('quota').innerHTML='โควตาข้อความ LINE เดือนนี้: '+(q?(q.limit==null?('ใช้ไป '+q.used+' ข้อความ (ไม่จำกัด)'):('ใช้ไป <b>'+q.used+'</b> จาก '+q.limit+' ข้อความ')):'<small>ดึงโควตาไม่ได้ (ตรวจ LINE_TOKEN)</small>')+' · ส่งจากแดชบอร์ดวันนี้ '+i.cap.used+'/'+i.cap.max+' ข้อความ';
+  $('hist').innerHTML=i.history.map(h=>`<div class="${/^ผิดพลาด/.test(h.status)?'bad':''}">${esc(h.at)} · ${esc(h.to)} · ${esc(h.status)} · ${esc(h.detail)}</div>`).join('')||'<small>ยังไม่มีประวัติ</small>';
+  $('status').innerHTML=(i.groups.token?'✅':'❌')+' โทเคน LINE · '+(i.groups.exec?'✅':'❌')+' กลุ่มผู้บริหาร · '+(i.groups.teacher?'✅':'❌')+' กลุ่มครู · '+(i.triggerOn?'✅ ตัวตั้งเวลารายวันทำงานอยู่':'❌ ยังไม่ได้ตั้งตัวตั้งเวลา (กดบันทึกการตั้งค่าด้านล่างเพื่อตั้ง)');
+  const s=i.settings;$('sAuto').checked=s.autoRemind;$('sDays').value=s.remindDays.join(',');$('sDead').value=s.deadlineDay;$('sHour').value=s.hour;
+  $('sSumDone').checked=s.summaryShowDone!==false;
+  renderNotices(i.notices);
+  $('sNames').checked=s.showNames;$('sExtra').value=s.extraAuto||'';$('sSum').checked=s.summaryOn;$('sSumDay').value=s.summaryDay;$('sInst').checked=s.instantOn;
+ }).catch(x=>{$('hist').innerHTML='<small>โหลดไม่ได้: '+esc(x.message)+'</small>'});}
+function showForm(){const t=FT[$('ftype').value];
+ document.querySelectorAll('.ff').forEach(l=>{const k=l.dataset.k;l.style.display=t[k]?'':'none';l.firstElementChild.textContent=t[k]||'';});}
+function renderNotices(n){
+ NOT={};[...n.pending,...n.recent].forEach(x=>NOT[x.id]=x.payload);
+ $('pendBox').style.display=n.pending.length?'':'none';
+ $('pend').innerHTML=n.pending.map(p=>`<div>⏰ ${esc(p.sendAt)} → ${esc(p.targets)} · ${esc(p.text.split('\n')[0])} <button class="mini ed" data-id="${esc(p.id)}" type="button">นำมาแก้</button><button class="mini cs" data-id="${esc(p.id)}" type="button" style="background:#a33">ยกเลิก</button></div>`).join('');
+ $('nlist').innerHTML=n.recent.map(p=>`<div class="${/^ผิดพลาด/.test(p.status)?'bad':''}">${esc(p.at)} → ${esc(p.targets)} · ${esc(p.status)} · ${esc(p.text.split('\n')[0])} <button class="mini ed" data-id="${esc(p.id)}" type="button">นำมาแก้</button></div>`).join('')||'<small>ยังไม่มี</small>';}
+function loadNotice(p){
+ $('kind').value=p.kind;kindChange();
+ if(p.kind==='form'){$('ftype').value=p.type;showForm();FK.forEach(k=>setF(k,p.f&&p.f[k]));}
+ else $('ctext').value=p.text||'';
+ $('tgt').value=p.targets||'teacher';$('schedOn').checked=false;schedChange();
+ $('sendBox').scrollIntoView({behavior:'smooth'});}
+function hidePreview(){PENDING=null;$('prevBox').style.display='none';}
+function opts(){const ids=[...document.querySelectorAll('.sel:checked')].map(i=>i.dataset.id);
+ const f={};FK.forEach(k=>f[k]=getF(k));
+ return {showNames:$('showNames').checked,extra:$('extra').value,ids:ids.length?ids:null,text:$('ctext').value,targets:$('tgt').value,type:$('ftype').value,f};}
+function schedChange(){const on=$('schedOn').checked;$('schedWrap').style.display=on?'':'none';$('doSend').textContent=on?'⏰ ยืนยันตั้งเวลาส่ง':'✅ ยืนยันส่ง';hidePreview();}
+$('go').onclick=()=>{CODE=$('code').value;load()};
+$('code').addEventListener('keydown',e=>{if(e.key==='Enter'){CODE=$('code').value;load()}});
+$('reload').onclick=load;$('prn').onclick=()=>window.print();
+$('month').onchange=load;$('year').onchange=load;
+$('rows').addEventListener('click',e=>{const b=e.target.closest('.dl');if(!b)return;b.disabled=true;const t0=b.textContent;b.textContent='กำลังเตรียม…';
+ run('getPdf',b.dataset.t,b.dataset.f).then(r=>{dl(r.name,r.b64);b.disabled=false;b.textContent=t0;}).catch(x=>{b.disabled=false;b.textContent='❌';});});
+$('rows').addEventListener('click',e=>{const b=e.target.closest('.mk');if(!b)return;const on=b.dataset.d==='1';
+ ask(on?'ติ๊กว่าครูท่านนี้ทำรายงานเดือนนี้นอกระบบและส่งแล้ว\nใส่ชั่วโมงสอนรวมของเดือน (ตัวเลข) หรือเว้นว่างถ้าไม่ทราบ':'ยกเลิกการติ๊กส่งแล้ว?\nครูท่านนี้จะกลับไปเป็น "ยังไม่ส่ง" และจะถูกเตือนอีกครั้ง',on).then(h=>{
+  if(h===null)return;b.disabled=true;
+  run('setManualDone',CODE,+$('year').value,+$('month').value,b.dataset.t,on,on?h:'').then(load).catch(x=>{b.disabled=false;$('msg').textContent='❌ '+x.message;});});});
+$('rows').addEventListener('click',e=>{const b=e.target.closest('.rp');if(!b)return;const a=b.dataset.a,id=b.dataset.t,nm=b.dataset.n,mo=$('month').options[$('month').selectedIndex].text+' '+$('year').value;
+ const cfg={ret:['ส่งกลับให้ '+nm+' แก้ไขรายงานเดือน'+mo+'?\nข้อมูลเดิมยังอยู่ ครูจะกลับเป็น "รอแก้ไข" (นับว่ายังไม่ส่ง) และกดโหลดรายงานเดิมมาแก้ในหน้ากรอกได้','reason','ส่งกลับให้แก้ไข','returnReport'],
+  unret:['ยกเลิกการส่งกลับ? รายงานเดิมของ '+nm+' จะกลับเป็น "ส่งแล้ว"',false,'ยกเลิกการส่งกลับ','cancelReturn'],
+  del:['⚠ ลบรายงานเดือน'+mo+' ของ '+nm+' ถาวร?\nข้อมูลตารางสอนจะถูกลบ และ PDF เดิมถูกย้ายลงถังขยะของ Drive ครูต้องกรอกใหม่ทั้งหมด (ถ้าอยากให้แก้จากข้อมูลเดิม ให้ใช้ "ส่งกลับแก้ไข" แทน)','reason','ลบรายงาน','deleteReport']}[a];
+ ask(cfg[0],cfg[1],cfg[2]).then(v=>{if(v===null)return;b.disabled=true;
+  const args=[CODE,+$('year').value,+$('month').value,id];if(cfg[1])args.push(v);
+  run(cfg[3],...args).then(load).catch(x=>{b.disabled=false;$('msg').textContent='❌ '+x.message;});});});
+$('rows').addEventListener('change',e=>{if(e.target.classList.contains('sel')){selCount();hidePreview();}});
+function kindChange(){const k=$('kind').value,fc=k==='form'||k==='custom';$('optRemind').style.display=k==='remind'?'':'none';$('optCustom').style.display=k==='custom'?'':'none';
+ $('optForm').style.display=k==='form'?'':'none';$('ftWrap').style.display=k==='form'?'':'none';$('tgtWrap').style.display=fc?'':'none';$('schedBox').style.display=fc?'':'none';
+ if(!fc)$('schedOn').checked=false;if(k==='form')showForm();schedChange();$('sendMsg').textContent='';}
+$('kind').onchange=kindChange;$('schedOn').onchange=schedChange;
+['input','change'].forEach(ev=>$('sendBox').addEventListener(ev,e=>{if(e.target.id!=='schedOn'&&e.target.id!=='kind'&&e.target.id!=='doSend')hidePreview();}));
+$('ftype').addEventListener('change',showForm);
+document.addEventListener('click',e=>{const b=e.target.closest('.ed,.cs');if(!b)return;const id=b.dataset.id;
+ if(b.classList.contains('ed')){if(NOT[id])loadNotice(NOT[id]);return;}
+ ask('ยกเลิกประกาศที่ตั้งเวลาไว้นี้?',false).then(v=>{if(v===null)return;
+  run('cancelScheduled',CODE,id).then(loadInfo).catch(x=>{$('sendMsg').className='';$('sendMsg').textContent='❌ '+x.message;});});});
+$('prev').onclick=()=>{$('sendMsg').textContent='';const req={kind:$('kind').value,y:+$('year').value,m:+$('month').value,o:opts(),at:$('schedOn').checked?schedVal():''};
+ if($('schedOn').checked&&!req.at){$('sendMsg').className='';$('sendMsg').textContent='❌ กรุณาเลือกวันและเวลาที่จะส่ง';return;}
+ run('previewNotice',CODE,req.kind,req.y,req.m,req.o).then(r=>{PENDING=req;$('prevTo').textContent=r.target+(req.at?'  · ตั้งเวลาส่ง '+req.at.replace('T',' ')+' น.':'');$('prevTxt').textContent=r.text;$('prevBox').style.display='';})
+  .catch(x=>{hidePreview();$('sendMsg').className='';$('sendMsg').textContent='❌ '+x.message;});};
+$('cancel').onclick=hidePreview;
+$('doSend').onclick=()=>{if(!PENDING)return;const r=PENDING;$('doSend').disabled=true;$('sendMsg').className='';$('sendMsg').textContent=r.at?'กำลังตั้งเวลา…':'กำลังส่ง…';
+ (r.at?run('scheduleNotice',CODE,r.kind,r.y,r.m,r.o,r.at).then(x=>({msg:'✅ ตั้งเวลาส่งเข้า'+x.target+' เมื่อ '+x.when+' น. แล้ว'})):
+  run('sendNotice',CODE,r.kind,r.y,r.m,r.o).then(x=>({msg:x.results.map(q=>q.ok?'✅ ส่งเข้า'+q.target+'แล้ว':'❌ ส่งเข้า'+q.target+'ไม่สำเร็จ').join(' · ')})))
+  .then(x=>{$('sendMsg').className='okmsg';$('sendMsg').textContent=x.msg;hidePreview();loadInfo();})
+  .catch(x=>{$('sendMsg').className='';$('sendMsg').textContent='❌ '+x.message;}).finally(()=>{$('doSend').disabled=false;});};
+$('saveSet').onclick=()=>{$('setMsg').className='';$('setMsg').textContent='กำลังบันทึก…';
+ const v={autoRemind:$('sAuto').checked,remindDays:$('sDays').value,deadlineDay:$('sDead').value,hour:$('sHour').value,showNames:$('sNames').checked,extraAuto:$('sExtra').value,summaryOn:$('sSum').checked,summaryShowDone:$('sSumDone').checked,summaryDay:$('sSumDay').value,instantOn:$('sInst').checked};
+ run('saveNotifySettings',CODE,v).then(s=>{$('setMsg').className='okmsg';$('setMsg').textContent='✅ บันทึกแล้ว · ตั้งเวลาตรวจทุกวัน '+String(s.hour).padStart(2,'0')+':00';loadInfo();})
+  .catch(x=>{$('setMsg').textContent='❌ '+x.message;});};
+$('cp').onclick=()=>{const t=$('miss');t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}$('cpm').textContent=ok?'คัดลอกแล้ว':'กดค้างที่ช่องข้อความเพื่อคัดลอกเอง';setTimeout(()=>$('cpm').textContent='',3000);};
+if(CODE)load();
+</script></body></html>
