@@ -1,12 +1,13 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ระบบรายงานการสอน จศป.</title>
-<link rel="stylesheet" href="app.css?v=25">
+<link rel="stylesheet" href="app.css?v=26">
 <script>if(/[?&]page=dash/.test(location.search))location.replace('dashboard.html');</script>
 </head><body style="margin:0">
 <div class="home">
   <div class="hero"><h1>ระบบรายงานการสอน จศป.</h1><p>วัดพระธาตุศรีจอมทอง</p></div>
   <div id="deadline" class="deadline" style="display:none"></div>
-  <p class="who" id="who"></p>
+  <div id="pickBox"></div>
+  <p class="who" id="hello"></p>
   <div class="tiles">
     <a class="tile main" href="report.html"><span class="ico">✎</span><span><b>กรอกรายงานการสอน</b><small>สำหรับครู ใช้ทุกเดือน</small></span><span class="go">›</span></a>
     <a class="tile" href="history.html"><span class="ico">▤</span><span><b>รายงานของฉัน</b><small>ดูประวัติ ดาวน์โหลด PDF แก้ไขฉบับเดิม</small></span><span class="go">›</span></a>
@@ -15,12 +16,15 @@
   </div>
   <div class="foot"><span>สำหรับผู้บริหาร: <a href="dashboard.html">เข้าแดชบอร์ด</a></span></div>
 </div>
-<script src="config.js?v=25"></script><script src="shim.js?v=25"></script><script src="common.js?v=25"></script>
+<script src="config.js?v=26"></script><script src="shim.js?v=26"></script><script src="common.js?v=26"></script>
 <script>
 (function(){
   var $=TR.$, MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  var t=TR.getT();
-  $('who').innerHTML=t?'ใช้งานในนาม <b>'+TR.esc(t.label)+'</b> · <a href="profile.html">เปลี่ยนชื่อ</a>':'ยังไม่ได้เลือกชื่อ ระบบจะให้เลือกเมื่อเข้าหน้ากรอกรายงาน';
+  function hello(id,label){
+    $('hello').innerHTML=id?'สวัสดี <b>'+TR.esc(label)+'</b> เลือกเมนูด้านล่างได้เลย':'กรุณาเลือกชื่อของท่านก่อน แล้วเลือกเมนูด้านล่าง';
+  }
+  hello('','');
+  TR.picker($('pickBox'),function(id,label){hello(id,label);});
   function show(d){
     var now=new Date(),left=d-now.getDate(),m=MONTHS[now.getMonth()],el=$('deadline');
     el.style.display='';
