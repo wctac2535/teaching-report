@@ -1,0 +1,58 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ข้อมูลส่วนตัว</title>
+<link rel="stylesheet" href="app.css?v=25">
+</head><body style="margin:0">
+<div id="nav"></div>
+<div class="page">
+  <h1>ข้อมูลส่วนตัว</h1>
+  <div id="pickBox"></div>
+  <div class="card profile" id="info"><small>เลือกชื่อเพื่อดู</small></div>
+  <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
+    <button type="button" class="b gray" id="btnEdit" disabled>✏️ แก้ไขข้อมูลของฉัน</button>
+    <button type="button" class="b ghost" id="btnAdd">➕ เพิ่มข้อมูลบุคคลใหม่</button>
+  </div>
+  <div id="pf"></div>
+</div>
+<script src="config.js?v=25"></script><script src="shim.js?v=25"></script><script src="common.js?v=25"></script>
+<script>
+(function(){
+  var $=TR.$,esc=TR.esc,CUR=null,NEED=false;
+  TR.nav(TR.TEACH,'profile.html');
+  var PF={title:'ชื่อ/สมณศักดิ์ *',alias:'ฉายา *',surname:'นามสกุล *',temple:'สังกัดวัด *',tambon:'ตำบล/แขวง (วัดสังกัด)',amphoe:'อำเภอ (วัดสังกัด)',province:'จังหวัด (วัดสังกัด)',zip:'รหัสไปรษณีย์ (วัดสังกัด)',phone:'โทรศัพท์ผู้สอน',accName:'ชื่อบัญชี',accNo:'เลขบัญชี',branch:'สาขาธนาคาร',tPlace:'สถานที่สอน (เช่น วัดพระธาตุศรีจอมทอง) *',tTambon:'ตำบล/แขวง (สถานที่สอน)',tAmphoe:'อำเภอ (สถานที่สอน)',tProvince:'จังหวัด (สถานที่สอน)',tZip:'รหัสไปรษณีย์ (สถานที่สอน)',tPhone:'โทรศัพท์สถานที่สอน',abbot:'ชื่อเจ้าอาวาส *',abbotPhone:'โทรศัพท์เจ้าอาวาส',secretary:'ชื่อเลขานุการวัด',secretaryPhone:'โทรศัพท์เลขานุการ'};
+  var PERSONAL=['id','title','alias','surname','phone','accName','accNo','branch'];
+  function show(r){
+    var p=r.profile;CUR=p;$('btnEdit').disabled=false;
+    $('info').innerHTML='<dl><dt>ชื่อ</dt><dd><b>'+esc(r.name)+'</b></dd><dt>สังกัดวัด</dt><dd>'+esc(p.temple)+' '+esc(p.tambon)+' '+esc(p.amphoe)+' '+esc(p.province)+'</dd>'+
+      '<dt>สถานที่สอน</dt><dd>'+esc(p.tPlace)+'</dd><dt>เจ้าอาวาส</dt><dd>'+esc(p.abbot)+'</dd><dt>บัญชี</dt><dd>'+esc(p.accName)+' · '+esc(p.accNo)+' '+esc(p.branch)+'</dd></dl>';
+  }
+  function load(id){
+    CUR=null;$('btnEdit').disabled=true;$('pf').innerHTML='';
+    if(!id){$('info').innerHTML='<small>เลือกชื่อเพื่อดู</small>';return;}
+    $('info').textContent='กำลังโหลด…';
+    TR.run('getTeacher',id).then(show).catch(function(e){$('info').innerHTML='<span class="msg err">❌ '+esc(e.message)+'</span>';});
+  }
+  function openPf(mode){
+    var base=mode==='edit'?CUR:Object.fromEntries(Object.entries(CUR||{}).filter(function(kv){return PERSONAL.indexOf(kv[0])<0;}));
+    $('pf').innerHTML='<div class="card"><h2>'+(mode==='edit'?'แก้ไขข้อมูล':'เพิ่มข้อมูลบุคคลใหม่')+'</h2>'+(mode==='add'&&CUR?'<small>คัดลอกข้อมูลวัดและเจ้าอาวาสจากบุคคลที่เลือกไว้ให้แล้ว กรอกเฉพาะข้อมูลส่วนตัว</small>':'')+
+      '<div class="fgrid">'+Object.keys(PF).map(function(k){return '<label>'+PF[k]+'<input data-k="'+k+'" value="'+esc(base[k])+'"></label>';}).join('')+'</div>'+
+      (NEED?'<div class="fgrid"><label>รหัสผู้ดูแล<input id="pcode" type="password" autocomplete="off"></label></div>':'')+
+      '<p><button type="button" class="b" id="pfSave">บันทึกข้อมูล</button> <button type="button" class="b ghost" id="pfCancel">ยกเลิก</button></p><div id="pfMsg" class="msg"></div></div>';
+    $('pfCancel').onclick=function(){$('pf').innerHTML='';};
+    $('pfSave').onclick=function(){
+      var p={id:mode==='edit'?CUR.id:''},lack=false,req=['title','alias','surname','temple','tPlace','abbot'];
+      document.querySelectorAll('#pf [data-k]').forEach(function(i){p[i.dataset.k]=i.value;var x=req.indexOf(i.dataset.k)>=0&&!i.value.trim();i.classList.toggle('err',x);if(x)lack=true;});
+      if(lack){$('pfMsg').className='msg err';$('pfMsg').textContent='❌ กรุณากรอกช่องที่ขึ้นสีแดงให้ครบ';return;}
+      $('pfMsg').className='msg';$('pfMsg').textContent='กำลังบันทึก…';
+      TR.run('saveTeacher',p,NEED?$('pcode').value:'').then(function(r){
+        try{sessionStorage.removeItem('tr_list');}catch(e){}
+        TR.setT({id:r.id,label:(r.teachers.filter(function(t){return String(t.id)===String(r.id);})[0]||{}).label||''});
+        $('pf').innerHTML='<div class="msg ok">✅ บันทึกข้อมูลแล้ว</div>';
+        setTimeout(function(){location.reload();},900);
+      }).catch(function(e){$('pfMsg').className='msg err';$('pfMsg').textContent='❌ '+e.message;});
+    };
+  }
+  $('btnEdit').onclick=function(){if(CUR)openPf('edit');};
+  $('btnAdd').onclick=function(){openPf('add');};
+  TR.picker($('pickBox'),function(id,label,info){NEED=!!(info&&info.needCode);load(id);}).then(function(info){if(info)NEED=!!info.needCode;});
+})();
+</script></body></html>

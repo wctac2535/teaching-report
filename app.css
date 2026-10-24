@@ -1,0 +1,62 @@
+/* สไตล์ร่วมทุกหน้า: แถบเมนู หน้าแรก ช่องเลือกชื่อ คู่มือ (ฟอร์มกับแดชบอร์ดมี CSS ของตัวเองในไฟล์) */
+:root{--bg:#faf8f3;--card:#fff;--line:#d8d2c4;--fg:#222;--muted:#666;--brand:#8a5a14;--brand-soft:#f6e9d3;
+ --green:#2c7a4b;--green-soft:#dff3e6;--red:#a00;--red-soft:#fde2e2;--warn-soft:#fff0d6}
+*{box-sizing:border-box}
+body.tr{font-family:'Sarabun',system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+nav.top{position:sticky;top:0;z-index:5;display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--line)}
+nav.top a{padding:12px 14px;white-space:nowrap;color:var(--muted);text-decoration:none;font-size:14px;border-bottom:3px solid transparent}
+nav.top a.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+nav.top a.back{color:var(--fg)}
+.pick{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:14px 0}
+.pick label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.pick select{width:100%;padding:9px;border:1px solid #bbb;border-radius:6px;font:inherit;background:#fff}
+.pick .hint{font-size:12px;color:var(--muted);margin-top:4px}
+#nav.inpad nav.top{margin:-16px -16px 12px}
+#ver{margin:28px 0 12px;font-size:12px;color:#999;text-align:center}
+/* หน้าแรก */
+.home{max-width:560px;margin:0 auto;padding:16px}
+.hero{background:var(--brand-soft);border-radius:12px;padding:16px;margin-bottom:12px}
+.hero h1{font-size:20px;margin:0}
+.hero p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.deadline{border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:14px;background:var(--warn-soft);color:var(--brand)}
+.deadline.late{background:var(--red-soft);color:var(--red)}
+.tiles{display:flex;flex-direction:column;gap:10px}
+a.tile{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card);color:inherit;text-decoration:none}
+a.tile:active{background:#f4f1ea}
+a.tile.main{border-color:var(--green);background:var(--green-soft)}
+a.tile .ico{width:44px;height:44px;border-radius:10px;background:#eee9dc;display:grid;place-items:center;font-size:22px;flex:none}
+a.tile.main .ico{background:var(--green);color:#fff}
+a.tile b{display:block;font-size:16px}
+a.tile small{color:var(--muted);font-size:13px}
+a.tile .go{margin-left:auto;color:var(--muted);font-size:22px}
+.who{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.who a{color:var(--brand)}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:12px;margin-top:18px}
+.foot a{color:var(--brand)}
+/* คู่มือ */
+.guide{max-width:700px;margin:0 auto;padding:16px}
+.guide h1{font-size:20px}
+.guide details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}
+.guide summary{cursor:pointer;font-weight:600}
+.guide details p,.guide details ol,.guide details ul{margin:8px 0 2px;color:#333}
+.guide .contact{background:var(--brand-soft);border-radius:10px;padding:12px;margin-top:16px;font-size:14px}
+/* หน้ารายงานของฉัน / ข้อมูลส่วนตัว */
+.page{max-width:760px;margin:0 auto;padding:16px}
+.page h1{font-size:20px;margin:6px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+.card h2{font-size:16px;margin:0 0 6px}
+.item{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-radius:8px}
+.item+.item{border-top:1px solid #eee}
+.item.ret{background:var(--warn-soft)}
+.item .grow{flex:1;min-width:140px}
+.yr{font-weight:600;margin-top:10px}
+.b{display:inline-block;border:0;border-radius:8px;padding:7px 14px;background:var(--brand);color:#fff;font:inherit;font-size:14px;cursor:pointer;text-decoration:none}
+.b.gray{background:#555}.b.green{background:var(--green)}.b:disabled{opacity:.5}
+.b.ghost{background:#fff;color:var(--fg);border:1px solid var(--line)}
+.msg{margin:8px 0;font-size:14px}.msg.err{color:var(--red)}.msg.ok{color:var(--green)}
+.profile dl{display:grid;grid-template-columns:130px 1fr;gap:4px 10px;margin:0;font-size:14px}
+.profile dt{color:var(--muted)}.profile dd{margin:0;overflow-wrap:anywhere}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.fgrid label{display:block;font-size:13px}
+.fgrid input{width:100%;padding:8px;border:1px solid #bbb;border-radius:6px;font:inherit;box-sizing:border-box}
+.fgrid input.err{border-color:#d33;background:#fff0f0}

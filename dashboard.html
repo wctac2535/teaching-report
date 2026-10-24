@@ -1,4 +1,5 @@
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>แดชบอร์ดการส่งรายงาน (จศป.)</title>
+<link rel="stylesheet" href="app.css?v=25">
 <style>
 body{font-family:'Sarabun',system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#faf8f3;color:#222}
 h1{font-size:20px;margin:4px 0 12px} fieldset{border:1px solid #d8d2c4;border-radius:10px;margin:14px 0;background:#fff}
@@ -25,8 +26,10 @@ pre{white-space:pre-wrap;background:#f4f1ea;border:1px dashed #b9a97f;border-rad
 #msg,#sendMsg,#setMsg{margin:8px 0;color:#a00} .okmsg{color:#1e6b3c!important}
 small{color:#666} .scroll{overflow-x:auto} .row2{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .hist div{font-size:13px;padding:3px 0;border-bottom:1px solid #f0ece2}.hist .bad{color:#a00}
-@media print{#login,#ctl,.noprint{display:none!important}body{background:#fff}}
+@media print{#login,#ctl,.noprint,nav.top{display:none!important}body{background:#fff}}
+.tab{display:none}.tab.on{display:block}
 </style></head><body>
+<div id="nav" class="inpad noprint"></div>
 <h1>📊 แดชบอร์ดการส่งรายงานการสอน (จศป.)</h1>
 
 <fieldset id="login"><legend>เข้าสู่ระบบ</legend>
@@ -39,6 +42,7 @@ small{color:#666} .scroll{overflow-x:auto} .row2{display:flex;gap:12px;flex-wrap
 <div class="g"><label>เดือน<select id="month"></select></label><label>ปี พ.ศ.<input id="year" type="number"></label>
 <div><button id="reload" type="button">รีเฟรช</button> <button id="prn" class="mini" type="button">พิมพ์</button></div></div></fieldset>
 
+<div class="tab on" id="tab-status">
 <div id="title" style="font-weight:600;font-size:16px"></div>
 <div class="bar"><i id="bar" style="width:0"></i></div><small id="pct"></small>
 <div class="cards">
@@ -53,6 +57,9 @@ small{color:#666} .scroll{overflow-x:auto} .row2{display:flex;gap:12px;flex-wrap
 <fieldset class="noprint" style="margin-top:16px"><legend>รายชื่อที่ยังไม่ส่ง (คัดลอกไปเตือนทางไลน์ได้)</legend>
 <textarea id="miss" readonly></textarea><div style="margin-top:6px"><button id="cp" class="mini" type="button">คัดลอกรายชื่อ</button> <span id="cpm"></span></div></fieldset>
 
+</div>
+
+<div class="tab" id="tab-line">
 <fieldset class="noprint" id="sendBox"><legend>📨 ส่งข้อความแจ้งเตือนทางไลน์ (เดือนที่เลือกด้านบน)</legend>
 <div class="g">
  <label>ประเภทข้อความ<select id="kind">
@@ -88,10 +95,16 @@ small{color:#666} .scroll{overflow-x:auto} .row2{display:flex;gap:12px;flex-wrap
 <div id="pendBox" style="display:none;margin-top:10px"><b>⏰ ประกาศที่ตั้งเวลาไว้ (รอส่ง)</b><div id="pend" class="hist"></div></div>
 </fieldset>
 
+</div>
+
+<div class="tab" id="tab-hist">
 <fieldset class="noprint"><legend>🧾 ประวัติการส่ง และโควตา LINE</legend>
 <div id="quota" style="margin-bottom:6px"></div><div id="hist" class="hist"><small>กำลังโหลด…</small></div>
 <div style="margin-top:10px"><b>🗂 ประกาศเฉพาะกิจที่ส่งไปแล้ว</b> <small>(กด "นำมาแก้" เพื่อดึงกลับมาแก้ไขแล้วส่งใหม่)</small></div><div id="nlist" class="hist"></div></fieldset>
 
+</div>
+
+<div class="tab" id="tab-set">
 <fieldset class="noprint"><legend>⚙️ ตั้งค่าการแจ้งเตือนอัตโนมัติ</legend>
 <div id="status" style="margin-bottom:8px;font-size:13px"></div>
 <label><input type="checkbox" id="sAuto">เตือนกลุ่มครูอัตโนมัติ (เมื่อยังมีครูไม่ส่งรายงาน)</label>
@@ -113,13 +126,10 @@ small{color:#666} .scroll{overflow-x:auto} .row2{display:flex;gap:12px;flex-wrap
 <div><small>ระบบตรวจทุกวันในช่วงชั่วโมงที่เลือก (ตัวตั้งเวลาของ Google อาจเลื่อนได้ไม่เกิน 1 ชั่วโมง) การบันทึกจะตั้งเวลาใหม่ให้เอง</small></div>
 </fieldset>
 </div>
+</div>
 
 <div id="dlg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9"><div style="background:#fff;max-width:380px;margin:20vh auto 0;padding:16px;border-radius:10px"><div id="dlgT" style="white-space:pre-wrap;margin-bottom:8px"></div><input id="dlgI" type="number" min="0" max="88" step="0.25" placeholder="ชั่วโมงรวม (เว้นว่างถ้าไม่ทราบ)"><div style="margin-top:10px"><button id="dlgOk" class="go" type="button">ตกลง</button> <button id="dlgNo" class="mini" type="button">ยกเลิก</button></div></div></div>
-<script>
-window.APP_VERSION='v24';
-if(!(window.google&&google.script&&google.script.run)){document.write('<script src="config.js?v=24"><\/script><script src="shim.js?v=24"><\/script>');}
-document.addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.id='ver';d.textContent='เวอร์ชัน '+window.APP_VERSION;d.style.cssText='margin:24px 0 8px;font-size:12px;color:#888;text-align:center';document.body.appendChild(d);});
-</script>
+<script src="config.js?v=25"></script><script src="shim.js?v=25"></script><script src="common.js?v=25"></script>
 <script>
 const $=id=>document.getElementById(id);
 const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -240,4 +250,13 @@ $('saveSet').onclick=()=>{$('setMsg').className='';$('setMsg').textContent='ก�
   .catch(x=>{$('setMsg').textContent='❌ '+x.message;});};
 $('cp').onclick=()=>{const t=$('miss');t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}$('cpm').textContent=ok?'คัดลอกแล้ว':'กดค้างที่ช่องข้อความเพื่อคัดลอกเอง';setTimeout(()=>$('cpm').textContent='',3000);};
 if(CODE)load();
+/* แท็บ: #status #line #hist #set */
+const TABS=[['#status','สถานะรายเดือน'],['#line','ส่งข้อความ LINE'],['#hist','ประวัติการส่ง'],['#set','ตั้งค่า']];
+function showTab(){
+ const h=(location.hash||'#status');const k=TABS.some(t=>t[0]===h)?h:'#status';
+ TR.nav([['index.html','‹ หน้าแรก','back']].concat(TABS.map(t=>[t[0],t[1]])),k);
+ document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on','#'+e.id.slice(4)===k));
+ $('ctl').style.display=(k==='#status'||k==='#line')?'':'none';
+}
+window.addEventListener('hashchange',showTab);showTab();
 </script></body></html>

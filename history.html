@@ -1,0 +1,43 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายงานของฉัน</title>
+<link rel="stylesheet" href="app.css?v=25">
+</head><body style="margin:0">
+<div id="nav"></div>
+<div class="page">
+  <h1>รายงานของฉัน</h1>
+  <div id="pickBox"></div>
+  <div id="retBox"></div>
+  <div class="card"><h2>รายงานที่ส่งแล้ว <small style="font-weight:400;color:#666">(12 เดือนล่าสุด ฉบับล่าสุดของแต่ละเดือน)</small></h2>
+    <div id="list"><small>เลือกชื่อเพื่อดู</small></div>
+    <div id="msg" class="msg"></div></div>
+</div>
+<script src="config.js?v=25"></script><script src="shim.js?v=25"></script><script src="common.js?v=25"></script>
+<script>
+(function(){
+  var $=TR.$,esc=TR.esc,TID='';
+  TR.nav(TR.TEACH,'history.html');
+  function load(){
+    if(!TID){$('list').innerHTML='<small>เลือกชื่อเพื่อดู</small>';$('retBox').innerHTML='';return;}
+    $('list').innerHTML='<small>กำลังโหลด…</small>';$('msg').textContent='';
+    TR.run('getTeacher',TID).then(function(r){
+      var yr=null,parts=[],ret=r.history.filter(function(x){return x.returned;});
+      r.history.forEach(function(x){
+        if(x.year!==yr){yr=x.year;parts.push('<div class="yr">พ.ศ. '+x.year+'</div>');}
+        parts.push('<div class="item'+(x.returned?' ret':'')+'"><span class="grow">'+esc(x.month)+' — '+esc(x.hours)+' ชม.'+
+          (x.returned?' <b style="color:#8a5a14">⚠ ผู้ดูแลส่งกลับให้แก้ไข</b>'+(x.reason?' ('+esc(x.reason)+')':''):'')+'</span>'+
+          '<button type="button" class="b ghost dlp" data-id="'+esc(x.id)+'">⬇️ PDF</button>'+
+          '<a class="b '+(x.returned?'':'gray')+'" href="report.html?edit='+x.year+'-'+x.mo+'">✏️ แก้ไข</a></div>');
+      });
+      $('list').innerHTML=parts.join('')||'<small>ยังไม่มีรายงานที่ส่งแล้ว</small>';
+      $('retBox').innerHTML=ret.length?'<div class="card" style="background:#fff0d6;border-color:#e0b25a"><b style="color:#8a5a14">⚠ ผู้ดูแลส่งกลับให้แก้ไข: '+ret.map(function(x){return esc(x.month)+' '+x.year;}).join(', ')+'</b><br><small>กดปุ่ม “แก้ไข” ที่เดือนนั้น แก้แล้วบันทึกใหม่</small></div>':'';
+    }).catch(function(e){$('list').innerHTML='<span class="msg err">❌ '+esc(e.message)+'</span>';});
+  }
+  $('list').addEventListener('click',function(e){
+    var b=e.target.closest('.dlp');if(!b)return;
+    b.disabled=true;var t0=b.textContent;b.textContent='กำลังเตรียมไฟล์…';
+    TR.run('getPdf',TID,b.dataset.id).then(function(r){TR.dl(r.name,r.b64);b.disabled=false;b.textContent=t0;})
+      .catch(function(x){b.disabled=false;b.textContent=t0;$('msg').className='msg err';$('msg').textContent='❌ '+x.message;});
+  });
+  TR.picker($('pickBox'),function(id){TID=id;load();});
+})();
+</script></body></html>

@@ -1,192 +1,33 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>แบบรายงานผลการปฏิบัติการสอน (จศป.)</title>
-<style>
-body{font-family:'Sarabun',system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;background:#faf8f3;color:#222}
-h1{font-size:20px} fieldset{border:1px solid #d8d2c4;border-radius:10px;margin:14px 0;background:#fff}
-legend{font-weight:600;padding:0 6px} label{display:block;font-size:13px;margin:6px 0}
-input,select{width:100%;box-sizing:border-box;padding:8px;border:1px solid #bbb;border-radius:6px;font:inherit}
-.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.row{border-top:1px dashed #ccc;padding-top:6px;margin-top:6px}
-button{padding:12px 20px;border:0;border-radius:8px;background:#8a5a14;color:#fff;font:inherit;font-size:16px;width:100%}
-#sum{font-size:16px;font-weight:600;margin:8px 0} #msg{margin-top:10px} small{color:#666}
-.ent{background:#fcfbf8;border:1px solid #e6e0d2;border-radius:8px;padding:6px 8px;margin-top:6px}
-.tm{display:flex;gap:4px;align-items:center}.tm select{width:auto;flex:1}
-output{display:block;padding:8px;background:#f1eee6;border-radius:6px;font-weight:600;min-height:20px}
-output.bad{background:#fde2e2;color:#a00}
-.add,.del{width:auto;padding:6px 12px;font-size:14px;margin-top:6px}.del{background:#b33;margin-left:6px}
-.add{background:#3b6e4f}
-.err{border-color:#d33!important;background:#fff0f0!important}
-.day.noent>b::after{content:' ⚠ ยังไม่ได้กรอก/ติ๊ก';color:#c00;font-weight:400;font-size:13px}.day.noent>b{color:#c00}
-.cpy{margin-left:14px;font-size:13px}.cpy select{width:auto;padding:3px}.cpy button.mini{margin:0 0 0 4px;padding:3px 10px}.cpm{color:#a00;font-size:12px;margin-left:6px}
-.dsum{margin-left:12px;font-weight:600;color:#3b6e4f;font-size:13px}
-.off{display:inline-block;margin-left:14px;font-size:14px}.off input{width:auto;margin-right:4px}
-#sum.over{color:#a00}
-button.mini{width:auto;padding:6px 12px;font-size:14px;margin:6px 6px 0 0;background:#555}button.mini:disabled{opacity:.45}
-#pf fieldset{background:#fffdf7;border-color:#c9b98f}
-#info{font-size:14px;line-height:1.6;background:#f4f1ea;border-radius:8px;padding:8px 12px}
-</style></head><body>
-<h1>แบบรายงานผลการปฏิบัติการสอน (จศป.)</h1>
-<form id="f">
-<fieldset><legend>1. เลือกชื่อของท่าน</legend>
-<select id="teacher"><option value="">— เลือกผู้สอน —</option></select>
-<div id="info"></div>
-<button type="button" class="mini" id="btnEdit" disabled>✏️ แก้ไขข้อมูล</button><button type="button" class="mini" id="btnAdd">➕ เพิ่มข้อมูลบุคคล</button>
-<div id="pf" style="display:none"></div></fieldset>
-
-<fieldset><legend>2. เดือนที่รายงาน</legend><div class="g">
-<label>เดือน<select id="month"></select></label>
-<label>ปี พ.ศ.<input id="year" type="number"></label>
-<label>ปีงบประมาณ พ.ศ.<input id="fiscalYear" type="number"></label>
-<label>ลงวันที่ (วันที่ของเดือน)<input id="signDay" type="number" min="1" max="31"></label></div></fieldset>
-
-<fieldset><legend>3. ตารางปฏิบัติการสอน</legend><label class="off" style="margin-left:0"><input type="checkbox" id="allOff">ไม่มีการเรียนการสอนตลอดเดือน (ติ๊กทุกวัน)</label>
-<div id="days"></div>
-<div id="sum"></div><small>เลือกเวลาเริ่มสอนและจำนวนชั่วโมง ระบบคำนวณเวลาเลิกให้ · ชั่วโมงรวม = จำนวนครั้ง × จำนวนชั่วโมง · วันที่ไม่ได้สอนให้ติ๊ก “ไม่มีการเรียนการสอน” · รวมไม่เกิน 88 ชั่วโมง/เดือน · ปกติหยุดทุกวันพระและวันอาทิตย์ หากมีการสอนในวันดังกล่าวให้กรอกได้ตามปกติ</small></fieldset>
-<button type="submit">บันทึกและสร้างรายงาน PDF</button><div id="msg"></div>
-<fieldset><legend>รายงานที่ท่านส่งแล้ว (12 เดือนล่าสุด ฉบับล่าสุดของแต่ละเดือน)</legend><div id="hist"><small>เลือกชื่อเพื่อดู</small></div></fieldset>
-</form>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบรายงานการสอน จศป.</title>
+<link rel="stylesheet" href="app.css?v=25">
+<script>if(/[?&]page=dash/.test(location.search))location.replace('dashboard.html');</script>
+</head><body style="margin:0">
+<div class="home">
+  <div class="hero"><h1>ระบบรายงานการสอน จศป.</h1><p>วัดพระธาตุศรีจอมทอง</p></div>
+  <div id="deadline" class="deadline" style="display:none"></div>
+  <p class="who" id="who"></p>
+  <div class="tiles">
+    <a class="tile main" href="report.html"><span class="ico">✎</span><span><b>กรอกรายงานการสอน</b><small>สำหรับครู ใช้ทุกเดือน</small></span><span class="go">›</span></a>
+    <a class="tile" href="history.html"><span class="ico">▤</span><span><b>รายงานของฉัน</b><small>ดูประวัติ ดาวน์โหลด PDF แก้ไขฉบับเดิม</small></span><span class="go">›</span></a>
+    <a class="tile" href="profile.html"><span class="ico">☺</span><span><b>ข้อมูลส่วนตัว</b><small>แก้ไขชื่อ วัด บัญชี เจ้าอาวาส</small></span><span class="go">›</span></a>
+    <a class="tile" href="guide.html"><span class="ico">?</span><span><b>คู่มือและคำถามที่พบบ่อย</b><small>วิธีกรอก วิธีแก้ไข เมื่อมีปัญหา</small></span><span class="go">›</span></a>
+  </div>
+  <div class="foot"><span>สำหรับผู้บริหาร: <a href="dashboard.html">เข้าแดชบอร์ด</a></span></div>
+</div>
+<script src="config.js?v=25"></script><script src="shim.js?v=25"></script><script src="common.js?v=25"></script>
 <script>
-window.APP_VERSION='v24';
-if(!(window.google&&google.script)&&/[?&]page=dash/.test(location.search))location.replace('dashboard.html');
-if(!(window.google&&google.script&&google.script.run)){document.write('<script src="config.js?v=24"><\/script><script src="shim.js?v=24"><\/script>');}
-document.addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.id='ver';d.textContent='เวอร์ชัน '+window.APP_VERSION;d.style.cssText='margin:24px 0 8px;font-size:12px;color:#888;text-align:center';document.body.appendChild(d);});
-</script>
-<script>
-const DAYS=['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์','อาทิตย์'];
-const $=id=>document.getElementById(id);
-let SUBJ={},NEED=false,CUR=null,pfMode='';
-const PF={title:'ชื่อ/สมณศักดิ์ *',alias:'ฉายา *',surname:'นามสกุล *',temple:'สังกัดวัด *',tambon:'ตำบล/แขวง (วัดสังกัด)',amphoe:'อำเภอ (วัดสังกัด)',province:'จังหวัด (วัดสังกัด)',zip:'รหัสไปรษณีย์ (วัดสังกัด)',phone:'โทรศัพท์ผู้สอน',accName:'ชื่อบัญชี',accNo:'เลขบัญชี',branch:'สาขาธนาคาร',tPlace:'สถานที่สอน (เช่น วัดพระธาตุศรีจอมทอง) *',tTambon:'ตำบล/แขวง (สถานที่สอน)',tAmphoe:'อำเภอ (สถานที่สอน)',tProvince:'จังหวัด (สถานที่สอน)',tZip:'รหัสไปรษณีย์ (สถานที่สอน)',tPhone:'โทรศัพท์สถานที่สอน',abbot:'ชื่อเจ้าอาวาส *',abbotPhone:'โทรศัพท์เจ้าอาวาส',secretary:'ชื่อเลขานุการวัด',secretaryPhone:'โทรศัพท์เลขานุการ'};
-const PERSONAL=['id','title','alias','surname','phone','accName','accNo','branch'];
-const esc=x=>String(x||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-function dl(name,b64){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
- const url=URL.createObjectURL(new Blob([u],{type:'application/pdf'})),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
-function fillTeachers(list,sel){$('teacher').innerHTML='<option value="">— เลือกผู้สอน —</option>'+list.map(t=>`<option value="${t.id}">${esc(t.label)}</option>`).join('');$('teacher').value=sel||'';}
-function openPf(mode){pfMode=mode;
- const base=mode==='edit'?CUR:Object.fromEntries(Object.entries(CUR||{}).filter(([k])=>!PERSONAL.includes(k)));
- $('pf').innerHTML=`<fieldset><legend>${mode==='edit'?'แก้ไขข้อมูล':'เพิ่มข้อมูลบุคคลใหม่'}</legend>${mode==='add'&&CUR?'<small>คัดลอกข้อมูลวัดและเจ้าอาวาสจากบุคคลที่เลือกไว้ให้แล้ว กรอกเฉพาะข้อมูลส่วนตัว</small>':''}
- <div class="g">${Object.keys(PF).map(k=>`<label>${PF[k]}<input data-k="${k}" value="${esc(base[k])}"></label>`).join('')}</div>
- ${NEED?'<label>รหัสผู้ดูแล<input id="pcode" type="password" autocomplete="off"></label>':''}
- <button type="button" class="mini" id="pfSave" style="background:#8a5a14">บันทึกข้อมูล</button><button type="button" class="mini" id="pfCancel">ยกเลิก</button><div id="pfMsg"></div></fieldset>`;
- $('pf').style.display='';
- $('pfCancel').onclick=()=>{$('pf').style.display='none';$('pf').innerHTML=''};
- $('pfSave').onclick=()=>{const p={id:mode==='edit'?CUR.id:''};document.querySelectorAll('#pf [data-k]').forEach(i=>p[i.dataset.k]=i.value);
-  const req=['title','alias','surname','temple','tPlace','abbot'];let lack=false;
-  document.querySelectorAll('#pf [data-k]').forEach(i=>{const x=req.includes(i.dataset.k)&&!i.value.trim();i.classList.toggle('err',x);if(x)lack=true;});
-  if(lack){$('pfMsg').textContent='❌ กรุณากรอกช่องที่ขึ้นสีแดงให้ครบ';return}
-  $('pfMsg').textContent='กำลังบันทึก...';
-  google.script.run.withSuccessHandler(r=>{fillTeachers(r.teachers,r.id);$('pf').style.display='none';$('pf').innerHTML='';$('teacher').onchange();$('info').insertAdjacentHTML('beforeend','<br>✅ บันทึกข้อมูลแล้ว');})
-   .withFailureHandler(x=>$('pfMsg').textContent='❌ '+x.message).saveTeacher(p,NEED?$('pcode').value:'');};}
-$('hist').addEventListener('click',e=>{const b=e.target.closest('.hd');if(!b)return;b.disabled=true;const t0=b.textContent;b.textContent='กำลังเตรียมไฟล์…';
- google.script.run.withSuccessHandler(r=>{dl(r.name,r.b64);b.disabled=false;b.textContent=t0;}).withFailureHandler(x=>{b.disabled=false;b.textContent='❌ '+x.message;}).getPdf($('teacher').value,b.dataset.id);});
-$('hist').addEventListener('click',e=>{const b=e.target.closest('.ld');if(!b)return;b.disabled=true;const t0=b.textContent;b.textContent='กำลังโหลด…';
- google.script.run.withSuccessHandler(r=>{b.disabled=false;b.textContent=t0;fillForm(r);}).withFailureHandler(x=>{b.disabled=false;b.textContent=t0;$('msg').textContent='❌ '+x.message;}).getReportForEdit($('teacher').value,+b.dataset.y,+b.dataset.m);});
-function setSel(s,v){if(![...s.options].some(o=>o.value===v))s.add(new Option(v,v));s.value=v;}
-function fillForm(r){
- $('month').value=r.month;$('year').value=r.year;$('month').onchange();if(r.signDay)$('signDay').value=r.signDay;
- document.querySelectorAll('.day').forEach(d=>{const name=d.dataset.day,off=r.offDays.includes(name),ls=r.lines.filter(l=>l.day===name);
-  d.querySelector('.ents').innerHTML='';
-  if(ls.length)ls.forEach(l=>{addEnt(d);const n=d.querySelector('.ents').lastElementChild,g=s=>n.querySelector(s),p=(l.start||'13:00').split(':');
-   setSel(g('.sh'),p[0]);setSel(g('.sm'),p[1]);g('.du').value=l.duration;g('.st').value=l.students;g('.se').value=l.sessions;
-   g('.cl').value=l.cls;g('.sj').innerHTML=subOpts(l.cls);
-   if(l.subject&&(SUBJ[l.cls]||[]).includes(l.subject))g('.sj').value=l.subject;
-   else if(l.subject){g('.sj').value='__other';g('.sx').style.display='';g('.sx').value=l.subject;}});
-  else addEnt(d);
-  d.querySelector('.offc').checked=off;applyOff(d,off);});
- $('allOff').checked=r.offDays.length===DAYS.length;calc();
- $('msg').textContent='✅ โหลดรายงานเดิมแล้ว ตรวจและแก้ไขตามต้องการ แล้วกดบันทึกเพื่อส่งใหม่ (ฉบับใหม่จะแทนที่ฉบับเดิม)';
- $('days').scrollIntoView({behavior:'smooth'});}
-$('btnAdd').onclick=()=>openPf('add');
-$('btnEdit').onclick=()=>{if(CUR)openPf('edit')};
-$('pf').addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
-google.script.run.withSuccessHandler(init).getInit();
-function init(d){
- SUBJ=d.subjects;
- NEED=d.needCode;fillTeachers(d.teachers,'');
- $('month').innerHTML=d.months.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
- $('month').value=d.month;$('year').value=d.thaiYear;
- const fy=()=>$('fiscalYear').value=+$('year').value+(+$('month').value>=9?1:0);
- const sd=()=>$('signDay').value=new Date(+$('year').value-543,+$('month').value+1,0).getDate();
- $('month').onchange=()=>{fy();sd()};$('year').onchange=()=>{fy();sd()};fy();sd();
- $('days').innerHTML=DAYS.map(day=>`<div class="row day" data-day="${day}"><b>${day}</b><span class="cpy"><select class="cps"><option value="">คัดลอกจากวัน…</option>${DAYS.filter(x=>x!==day).map(x=>`<option>${x}</option>`).join('')}</select><button type="button" class="mini cp">คัดลอก</button><span class="cpm"></span></span><span class="dsum"></span><label class="off"><input type="checkbox" class="offc">ไม่มีการเรียนการสอน</label><div class="ents"></div><button type="button" class="add">+ เพิ่มช่วงสอนของวัน${day}</button></div>`).join('');
- document.querySelectorAll('.day').forEach(addEnt);
- $('days').addEventListener('input',calc);
- $('days').addEventListener('change',e=>{const c=e.target.classList,ent=e.target.closest('.ent');
-  if(c.contains('cl')){ent.querySelector('.sj').innerHTML=subOpts(e.target.value);ent.querySelector('.sx').style.display='none';}
-  if(c.contains('sj'))ent.querySelector('.sx').style.display=e.target.value==='__other'?'':'none';
-  if(c.contains('offc')){applyOff(e.target.closest('.day'),e.target.checked);$('allOff').checked=offDays().length===DAYS.length;}calc();});
- $('allOff').onchange=e=>{document.querySelectorAll('.day').forEach(d=>{d.querySelector('.offc').checked=e.target.checked;applyOff(d,e.target.checked)});calc();};
- $('days').addEventListener('click',e=>{const t=e.target,day=t.closest('.day');
-  if(t.classList.contains('add'))addEnt(day);
-  if(t.classList.contains('cp')){const m=day.querySelector('.cpm'),src=day.querySelector('.cps').value;m.textContent=src?copyDay(day,src):'เลือกวันที่จะคัดลอกก่อน';if(m.textContent)setTimeout(()=>m.textContent='',3500);}
-  if(t.classList.contains('del')){const ents=day.querySelectorAll('.ent');if(ents.length>1)t.closest('.ent').remove();else{t.closest('.ent').querySelector('.se').value='';}calc();}});
- calc();
- $('teacher').onchange=()=>{ if(!$('teacher').value){$('info').innerHTML='';CUR=null;$('btnEdit').disabled=true;return}
-  $('info').textContent='กำลังโหลด...';
-  google.script.run.withSuccessHandler(r=>{const p=r.profile;CUR=p;$('btnEdit').disabled=false;
-   $('info').innerHTML=`<b>${r.name}</b><br>สังกัดวัด ${p.temple} · ${p.tambon} ${p.amphoe} ${p.province}<br>สถานที่สอน ${p.tPlace}<br>บัญชี ${p.accName} · ${p.accNo}`;
-   let yr=null;const parts=[];r.history.forEach(x=>{if(x.year!==yr){yr=x.year;parts.push(`<div style="font-weight:600;margin-top:8px">พ.ศ. ${x.year}</div>`);}
-    parts.push(`<div${x.returned?' style="background:#fff4de;padding:4px 6px;border-radius:6px"':''}>${esc(x.month)} — ${x.hours} ชม. ${x.returned?'<b style="color:#a60">⚠ ผู้ดูแลส่งกลับให้แก้ไข</b>'+(x.reason?' ('+esc(x.reason)+')':'')+' ':''}<button type="button" class="mini hd" data-id="${x.id}">⬇️ ดาวน์โหลด PDF</button><button type="button" class="mini ld" data-y="${x.year}" data-m="${x.mo}">✏️ โหลดมาแก้</button></div>`);});
-   const rt=r.history.filter(x=>x.returned);if(rt.length)$('info').insertAdjacentHTML('beforeend','<br><b style="color:#a60">⚠ รายงานที่ผู้ดูแลส่งกลับให้แก้ไข: '+rt.map(x=>esc(x.month)+' '+x.year).join(', ')+' — กด “โหลดมาแก้” ในรายการด้านล่าง</b>');
-   $('hist').innerHTML=parts.join('')||'<small>ยังไม่มี</small>';
-  }).withFailureHandler(x=>$('info').textContent='❌ '+x.message).getTeacher($('teacher').value)};}
-const HH=[...Array(24).keys()].map(h=>('0'+h).slice(-2)), MM=['00','15','30','45'];
-const opt=(arr,sel)=>arr.map(v=>`<option${v===sel?' selected':''}>${v}</option>`).join('');
-function addEnt(day){day.querySelector('.ents').insertAdjacentHTML('beforeend',`<div class="ent"><div class="g">
-  <label>เริ่มสอน (24 ชม.)<span class="tm"><select class="sh">${opt(HH,'13')}</select>:<select class="sm">${opt(MM,'00')}</select></span></label>
-  <label>จำนวนชั่วโมงที่สอน<input class="du" type="number" step="0.5" min="0.5" max="24" value="4"></label>
-  <label>เลิกสอน (คำนวณให้)<output class="en"></output></label>
-  <label>ชั้นที่สอน<select class="cl"><option value="">— เลือกชั้น —</option>${Object.keys(SUBJ).map(c=>`<option>${c}</option>`).join('')}</select></label>
-  <label>จำนวน (รูป)<input class="st" type="number" min="0"></label>
-  <label>วิชาที่สอน<select class="sj">${subOpts('')}</select><input class="sx" placeholder="พิมพ์ชื่อวิชา" style="display:none;margin-top:4px"></label>
-  <label>จำนวนครั้ง/เดือน<input class="se" type="number" min="0"></label></div>
-  <button type="button" class="del">ลบช่วงนี้</button></div>`);calc();}
-function copyDay(to,fromName){
- const from=[...document.querySelectorAll('.day')].find(d=>d.dataset.day===fromName);
- const src=from?[...from.querySelectorAll('.ent')]:[];
- if(!from||from.querySelector('.offc').checked||!src.some(e=>e.querySelector('.cl').value||e.querySelector('.se').value))return 'วัน'+fromName+'ยังไม่มีข้อมูลให้คัดลอก';
- to.querySelector('.offc').checked=false;applyOff(to,false);$('allOff').checked=false;
- to.querySelector('.ents').innerHTML='';
- src.forEach(e=>{addEnt(to);const n=to.querySelector('.ents').lastElementChild,g=(x,s)=>x.querySelector(s);
-  ['.sh','.sm','.du','.st','.se'].forEach(k=>g(n,k).value=g(e,k).value);
-  const cl=g(e,'.cl').value;g(n,'.cl').value=cl;g(n,'.sj').innerHTML=subOpts(cl);g(n,'.sj').value=g(e,'.sj').value;
-  if(g(e,'.sj').value==='__other'){g(n,'.sx').style.display='';g(n,'.sx').value=g(e,'.sx').value;}});
- calc();return '';
-}
-function applyOff(d,o){d.querySelector('.ents').style.display=o?'none':'';d.querySelector('.add').style.display=o?'none':'';}
-function subOpts(c){const l=SUBJ[c];if(!c||!l)return '<option value="">— เลือกชั้นก่อน —</option>';
- return '<option value="">— เลือกวิชา —</option>'+l.map(x=>`<option>${x}</option>`).join('')+'<option value="__other">อื่น ๆ (พิมพ์เอง)</option>';}
-function m2t(m){return ('0'+Math.floor(m/60)).slice(-2)+':'+('0'+m%60).slice(-2)}
-function lines(){const out=[];document.querySelectorAll('.day').forEach(d=>{if(d.querySelector('.offc').checked)return;d.querySelectorAll('.ent').forEach(e=>{
-  const start=e.querySelector('.sh').value+':'+e.querySelector('.sm').value,dur=Number(e.querySelector('.du').value||0);
-  out.push({day:d.dataset.day,start,duration:dur,cls:e.querySelector('.cl').value,students:e.querySelector('.st').value,subject:(sj=>sj==='__other'?e.querySelector('.sx').value.trim():sj)(e.querySelector('.sj').value),sessions:Number(e.querySelector('.se').value||0),_el:e});});});return out;}
-function offDays(){return [...document.querySelectorAll('.day')].filter(d=>d.querySelector('.offc').checked).map(d=>d.dataset.day);}
-let bad=false,over=false,missing=false,emptyDays=[];
-function calc(){bad=false;missing=false;emptyDays=[];let h=0;
- document.querySelectorAll('.day').forEach(d=>{const off=d.querySelector('.offc').checked;let active=0,dh=0;
-  d.querySelectorAll('.ent').forEach(e=>{const q=s=>e.querySelector(s),cl=q('.cl'),sj=q('.sj'),sx=q('.sx'),st=q('.st'),se=q('.se'),du=q('.du'),o=q('.en');
-   const other=sj.value==='__other',subj=other?sx.value.trim():sj.value,dur=Number(du.value||0),ses=Number(se.value||0),stu=st.value.trim();
-   const act=!off&&!!(cl.value||subj||stu||ses>0),m={cl:!cl.value,sj:!subj,st:!stu,se:!(ses>0),du:!(dur>0)};
-   [[cl,m.cl],[other?sx:sj,m.sj],[st,m.st],[se,m.se],[du,m.du]].forEach(([el,x])=>el.classList.toggle('err',act&&x));
-   if(!other)sx.classList.remove('err');else sj.classList.remove('err');
-   const s0=+q('.sh').value*60+ +q('.sm').value,end=s0+Math.round(dur*60);
-   if(!(dur>0)){o.textContent='—';o.className='en';}
-   else if(end>1440){o.textContent='เกิน 24:00';o.className='en bad';if(act)bad=true;}
-   else{o.textContent=m2t(end)+' น.';o.className='en';}
-   if(act){active++;if(Object.values(m).some(Boolean))missing=true;if(ses>0&&dur>0){h+=ses*dur;dh+=ses*dur;}}});
-  d.querySelector('.dsum').textContent=!off&&dh>0?`รวมวัน${d.dataset.day}: ${Math.round(dh*100)/100} ชม./เดือน`:'';
-  d.classList.toggle('noent',!off&&active===0);if(!off&&active===0)emptyDays.push(d.dataset.day);});
- h=Math.round(h*100)/100;over=h>88;$('sum').className=over?'over':'';
- $('sum').textContent=over?`⚠ ผลรวมชั่วโมงการสอนต่อเดือน เกิน 88 ชั่วโมง (ขณะนี้ ${h} ชั่วโมง)`:`รวม ${h} ชั่วโมง/เดือน (ไม่เกิน 88)`}
-$('f').onsubmit=e=>{e.preventDefault();
- if(!$('teacher').value){$('msg').textContent='❌ กรุณาเลือกชื่อผู้สอน';return}
- if(!lines().some(l=>l.sessions>0&&l.duration>0)&&offDays().length<DAYS.length){$('msg').textContent='❌ กรุณากรอกตารางสอนอย่างน้อย 1 ช่วง หรือติ๊ก “ไม่มีการเรียนการสอน” ให้ครบทุกวัน';return}
- if(emptyDays.length){$('msg').textContent='❌ วัน'+emptyDays.join(' ')+' ยังไม่ได้กรอกหรือติ๊ก “ไม่มีการเรียนการสอน”';return}
- if(over){$('msg').textContent='❌ ผลรวมชั่วโมงการสอนต่อเดือน เกิน 88 ชั่วโมง กรุณาแก้ไขก่อนบันทึก';return}
- if(missing){$('msg').textContent='❌ กรุณากรอกข้อมูลให้ครบ ช่องที่ขึ้นสีแดงยังไม่ได้กรอก';return}
- if(bad){$('msg').textContent='❌ มีช่วงสอนที่เวลาเลิกเกิน 24:00 กรุณาแก้ก่อน';return}
- const btn=document.querySelector('#f button[type=submit]');btn.disabled=true;let sec=0;
- const tm=setInterval(()=>{$('msg').textContent='⏳ กำลังสร้างรายงาน PDF… '+(++sec)+' วินาที (กรุณาอย่าปิดหน้านี้)'},1000);
- $('msg').textContent='⏳ กำลังสร้างรายงาน PDF…';
- google.script.run.withSuccessHandler(r=>{clearInterval(tm);btn.disabled=false;$('msg').innerHTML=`✅ บันทึกแล้ว ${r.totalHours} ชั่วโมง <button type="button" class="mini" id="dlNow" style="background:#8a5a14">⬇️ ดาวน์โหลด PDF</button>`;$('dlNow').onclick=()=>dl(r.name,r.b64);$('teacher').onchange();})
- .withFailureHandler(x=>{clearInterval(tm);btn.disabled=false;$('msg').textContent='❌ '+x.message;})
- .submitReport({teacherId:$('teacher').value,month:+$('month').value,year:+$('year').value,fiscalYear:+$('fiscalYear').value,signDay:$('signDay').value,offDays:offDays(),lines:lines().map(({_el,...r})=>r)});};
+(function(){
+  var $=TR.$, MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  var t=TR.getT();
+  $('who').innerHTML=t?'ใช้งานในนาม <b>'+TR.esc(t.label)+'</b> · <a href="profile.html">เปลี่ยนชื่อ</a>':'ยังไม่ได้เลือกชื่อ ระบบจะให้เลือกเมื่อเข้าหน้ากรอกรายงาน';
+  function show(d){
+    var now=new Date(),left=d-now.getDate(),m=MONTHS[now.getMonth()],el=$('deadline');
+    el.style.display='';
+    if(left>0){el.textContent='รายงานเดือน'+m+' ส่งภายในวันที่ '+d+' '+m+' (เหลืออีก '+left+' วัน)';}
+    else if(left===0){el.textContent='รายงานเดือน'+m+' ครบกำหนดส่งวันนี้ (วันที่ '+d+')';}
+    else{el.classList.add('late');el.textContent='เลยกำหนดส่งรายงานเดือน'+m+' (วันที่ '+d+') แล้ว หากยังไม่ได้ส่ง กรุณาส่งโดยเร็ว';}
+  }
+  TR.run('getPublicInfo').then(function(i){show(i.deadlineDay);}).catch(function(){});
+})();
 </script></body></html>
